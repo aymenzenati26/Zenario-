@@ -600,4 +600,58 @@
         }
 
         // Add to/remove from My List functionality
-        
+        listBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!currentEpisodeData) return;
+            
+            const movieDetails = {
+                tmdbId: tmdbId,
+                seasonNumber: seasonNumber,
+                episodeNumber: currentEpisodeData.episode_number.toString(),
+                title: `${showData?.name || 'Show'} - S${seasonNumber}E${currentEpisodeData.episode_number}`,
+                poster: currentEpisodeData.still_path 
+                    ? `https://image.tmdb.org/t/p/w300${currentEpisodeData.still_path}`
+                    : '',
+                link: `https://vidsrc.vip/embed/tv/${tmdbId}/${seasonNumber}/${currentEpisodeData.episode_number}`,
+            };
+
+            const myList = JSON.parse(localStorage.getItem('myList')) || [];
+            const isAlreadyAdded = myList.some(item => 
+                item.tmdbId === tmdbId && 
+                item.seasonNumber === seasonNumber && 
+                item.episodeNumber === currentEpisodeData.episode_number.toString()
+            );
+
+            if (!isAlreadyAdded) {
+                myList.push(movieDetails);
+                localStorage.setItem('myList', JSON.stringify(myList));
+                alert('Added to My List!');
+                listBtn.innerHTML = '<i class="fas fa-check"></i> In My List';
+                listBtn.classList.add('secondary');
+            } else {
+                // Remove from list
+                const updatedList = myList.filter(item => 
+                    !(item.tmdbId === tmdbId && 
+                    item.seasonNumber === seasonNumber && 
+                    item.episodeNumber === currentEpisodeData.episode_number.toString())
+                );
+                localStorage.setItem('myList', JSON.stringify(updatedList));
+                alert('Removed from My List!');
+                listBtn.innerHTML = '<i class="fas fa-plus"></i> My List';
+                listBtn.classList.remove('secondary');
+            }
+        });
+
+        // Play button event
+        playBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentEpisodeData) {
+                loadPlayer(currentEpisodeData.episode_number);
+            }
+        });
+
+        // Load show details when page loads
+        document.addEventListener('DOMContentLoaded', fetchShowDetails);
+    </script>
+</body>
+</html>
