@@ -600,15 +600,4 @@
         }
 
         // Add to/remove from My List functionality
-        listBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (!currentEpisodeData) return;
-            
-            const movieDetails = {
-                tmdbId: tmdbId,
-                seasonNumber: seasonNumber,
-                episodeNumber: currentEpisodeData.episode_number.toString(),
-                title: `${showData?.name || 'Show'} - S${seasonNumber}E${currentEpisodeData.episode_number}`,
-                poster: currentEpisodeData.still_path 
-                    ? `https://image.tmdb.org/t/p/w300${currentEpisodeData.still_path}`
-                   
+        
