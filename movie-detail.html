@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Series Player</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y52WWSC276"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-Y52WWSC276');
+    </script>
+    <script src="https://kit.fontawesome.com/a02bd9801f.js" crossorigin="anonymous"></script>
+    <!-- Swiper JS -->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            min-height: 100vh;
+            background: rgb(23, 23, 23);
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        header {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.7) 100%);
+            z-index: 1;
+        }
+
+        .bg-image {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        /* Navigation */
+        header nav {
+            width: 100%;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0px 50px;
+            position: relative;
+            z-index: 10;
+        }
+
+        header nav .logo_ul {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        header nav .logo_ul img {
+            width: 90px;
+        }
+
+        header nav .logo_ul ul {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            list-style: none;
+        }
+
+        header nav .logo_ul ul li {
+            padding: 3px 15px;
+        }
+
+        header nav .logo_ul ul li a {
+            text-decoration: none;
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+            transition: .3s linear;
+        }
+
+        header nav .logo_ul ul li a:hover {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Content Section */
+        .content {
+            position: relative;
+            margin-top: 50px;
+            padding: 0 50px;
+            max-width: 50%;
+            z-index: 10;
+        }
+
+        .content h1 {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .content p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .details {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .details h6 {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+            margin-right: 15px;
+        }
+
+        .details h5 {
+            color: rgb(142, 230, 48);
+            font-size: 12px;
+            margin-right: 15px;
+        }
+
+        .details h4 {
+            color: #fff;
+            font-size: 12px;
+            margin-right: 15px;
+        }
+
+        .details h3 {
+            color: #fff;
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .details h3 span {
+            background: yellow;
+            color: #000;
+            padding: 0px 3px;
+            margin: 0px 5px;
+            font-weight: 500;
+        }
+
+        .details h3 i {
+            margin-right: 5px;
+        }
+
+        /* Buttons */
+        .btns {
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .btns a {
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            background: linear-gradient(90deg, #00bdff, #0079ff);
+            border-radius: 5px;
+            color: #fff;
+            margin-right: 15px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .btns a i {
+            margin-right: 8px;
+        }
+
+        .btns a:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 121, 255, 0.4);
+        }
+
+        .btns a.secondary {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .btns a.secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Player Section */
+        .player-section {
+            position: relative;
+            width: 100%;
+            padding: 50px;
+            margin-top: 30px;
+            z-index: 10;
+        }
+
+        .player-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            background: #000;
+        }
+
+        .player-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Episodes Section */
+        .episodes-section {
+            position: relative;
+            width: 100%;
+            padding: 0 50px 50px;
+            margin-top: 30px;
+            z-index: 10;
+        }
+
+        .episodes-section h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .swiper {
+            width: 100%;
+            height: 220px;
+            padding: 20px 0;
+        }
+
+        .swiper-slide {
+            width: 160px;
+            height: 180px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .swiper-slide:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .episode-poster {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .episode-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .swiper-slide:hover .episode-info {
+            opacity: 1;
+        }
+
+        .episode-info h4 {
+            font-size: 12px;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .episode-info p {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 3px;
+        }
+
+        /* Responsive Styles */
+        @media screen and (max-width: 768px) {
+            header nav {
+                padding: 0 20px;
+            }
+
+            .content {
+                padding: 0 20px;
+                max-width: 100%;
+                margin-top: 20px;
+            }
+
+            .content h1 {
+                font-size: 32px;
+            }
+
+            .player-section,
+            .episodes-section {
+                padding: 0 20px 30px;
+            }
+
+            .swiper-slide {
+                width: 140px;
+                height: 160px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .content h1 {
+                font-size: 24px;
+            }
+
+            .btns a {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+
+            .swiper-slide {
+                width: 120px;
+                height: 140px;
+            }
+        }
+
+        /* Error Message */
+        .error-message {
+            color: #ff6b6b;
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img class="bg-image" id="bg-image" src="" alt="Background">
+        
+        <nav>
+            <div class="logo_ul">
+                <img src="logo.png" alt="Logo">
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">TV Shows</a></li>
+                    <li><a href="#">Movies</a></li>
+                  
+                </ul>
+            </div>
+        </nav>
+
+        <div class="content">
+            <h1 id="movie-title">Loading...</h1>
+            <div class="details">
+                <h5 id="match-percent">98% Match</h5>
+                <h4 id="release-year">2023</h4>
+                <h6 id="season-count">4 Seasons</h6>
+                <h3><i class="fas fa-star"></i><span id="rating">8.5</span>Rating</h3>
+            </div>
+            <p id="movie-overview">Loading show details...</p>
+            
+            <div class="btns">
+                <a href="#" id="playbtn"><i class="fas fa-play"></i> Play</a>
+                <a href="#" class="secondary" id="listbtn"><i class="fas fa-plus"></i> My List</a>
+            </div>
+        </div>
+
+        <div class="player-section">
+            <div class="player-container" id="player-container">
+                <!-- Player will be loaded here directly -->
+                <iframe id="movie-iframe" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+            </div>
+        </div>
+
+        <div class="episodes-section">
+            <h2>Episodes</h2>
+            <div class="swiper">
+                <div class="swiper-wrapper" id="episodes-list">
+                    <!-- Episodes will be loaded here -->
+                </div>
+                <div class="swiper-scrollbar"></div>
+            </div>
+        </div>
+    </header>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const tmdbId = urlParams.get('tmdbId');
+        const seasonNumber = urlParams.get('seasonNumber') || '1';
+        const episodeNumber = urlParams.get('episodeNumber') || '1';
+        const apiKey = "ef1a1941f096c9755627399fa267b35e"; // Replace with your TMDb API key
+
+        // Initialize Swiper with touch support
+        const swiper = new Swiper('.swiper', {
+            slidesPerView: 'auto',
+            spaceBetween: 10,
+            freeMode: true,
+            scrollbar: {
+                el: '.swiper-scrollbar',
+                draggable: true,
+            },
+            mousewheel: {
+                forceToAxis: true,
+            },
+            touchEventsTarget: 'container',
+            grabCursor: true,
+        });
+
+        // DOM Elements
+        const movieTitle = document.getElementById('movie-title');
+        const movieOverview = document.getElementById('movie-overview');
+        const matchPercent = document.getElementById('match-percent');
+        const releaseYear = document.getElementById('release-year');
+        const seasonCount = document.getElementById('season-count');
+        const rating = document.getElementById('rating');
+        const playBtn = document.getElementById('playbtn');
+        const listBtn = document.getElementById('listbtn');
+        const playerContainer = document.getElementById('player-container');
+        const movieIframe = document.getElementById('movie-iframe');
+        const episodesList = document.getElementById('episodes-list');
+        const bgImage = document.getElementById('bg-image');
+
+        // Current episode data
+        let currentEpisodeData = null;
+        let allEpisodes = [];
+        let showData = null;
+
+        // Load the video player
+        function loadPlayer(episodeNum) {
+            const playerUrl = `https://vidsrc.vip/embed/tv/${tmdbId}/${seasonNumber}/${episodeNum}`;
+            movieIframe.setAttribute('src', playerUrl);
+            
+            // Highlight the selected episode
+            highlightSelectedEpisode(episodeNum);
+            
+            // Update background image with episode still
+            const episode = allEpisodes.find(ep => ep.episode_number.toString() === episodeNum.toString());
+            if (episode && episode.still_path) {
+                bgImage.src = `https://image.tmdb.org/t/p/original${episode.still_path}`;
+            }
+        }
+
+        // Highlight selected episode
+        function highlightSelectedEpisode(episodeNum) {
+            document.querySelectorAll('.swiper-slide').forEach(card => {
+                card.style.border = card.dataset.episode === episodeNum.toString() ? '2px solid #00bdff' : 'none';
+            });
+        }
+
+        // Fetch TV show details
+        const fetchShowDetails = async () => {
+            try {
+                // First fetch show details
+                const showUrl = `https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${apiKey}&language=en-US`;
+                const showResponse = await fetch(showUrl);
+                
+                if (!showResponse.ok) {
+                    throw new Error(`Failed to fetch show data: ${showResponse.status}`);
+                }
+                
+                showData = await showResponse.json();
+                
+                // Then fetch season details
+                const seasonUrl = `https://api.themoviedb.org/3/tv/${tmdbId}/season/${seasonNumber}?api_key=${apiKey}&language=en-US`;
+                const seasonResponse = await fetch(seasonUrl);
+                
+                if (!seasonResponse.ok) {
+                    throw new Error(`Failed to fetch season data: ${seasonResponse.status}`);
+                }
+                
+                const seasonData = await seasonResponse.json();
+
+                // Update show title and overview
+                movieTitle.textContent = `${showData.name} - Season ${seasonNumber}`;
+                movieOverview.textContent = seasonData.overview || showData.overview || "No overview available.";
+                
+                // Update details
+                releaseYear.textContent = seasonData.air_date 
+                    ? new Date(seasonData.air_date).getFullYear() 
+                    : showData.first_air_date 
+                        ? new Date(showData.first_air_date).getFullYear() 
+                        : 'N/A';
+                
+                seasonCount.textContent = `${showData.number_of_seasons} Season${showData.number_of_seasons !== 1 ? 's' : ''}`;
+                rating.textContent = showData.vote_average ? showData.vote_average.toFixed(1) : 'N/A';
+                matchPercent.textContent = `${Math.floor(Math.random() * 30) + 70}% Match`;
+
+                // Set background image (using show backdrop)
+                if (showData.backdrop_path) {
+                    bgImage.src = `https://image.tmdb.org/t/p/original${showData.backdrop_path}`;
+                }
+
+                // Load episodes
+                allEpisodes = seasonData.episodes || [];
+                episodesList.innerHTML = '';
+
+                if (allEpisodes.length === 0) {
+                    episodesList.innerHTML = '<div class="error-message">No episodes found for this season</div>';
+                    return;
+                }
+
+                allEpisodes.forEach(episode => {
+                    const episodeItem = document.createElement('div');
+                    episodeItem.className = 'swiper-slide';
+                    episodeItem.dataset.episode = episode.episode_number;
+                    
+                    const posterUrl = episode.still_path 
+                        ? `https://image.tmdb.org/t/p/w300${episode.still_path}` 
+                        : 'https://via.placeholder.com/300x169?text=No+Image';
+
+                    episodeItem.innerHTML = `
+                        <img src="${posterUrl}" alt="${episode.name}" class="episode-poster">
+                        <div class="episode-info">
+                            <h4>${episode.episode_number}. ${episode.name}</h4>
+                            <p>${episode.air_date || 'Date not available'}</p>
+                            <p>${episode.runtime || '--'} min</p>
+                        </div>
+                    `;
+                    
+                    // Add click event to play episode
+                    episodeItem.addEventListener('click', () => {
+                        currentEpisodeData = episode;
+                        loadPlayer(episode.episode_number);
+                    });
+                    
+                    episodesList.appendChild(episodeItem);
+                });
+
+                // Update Swiper after loading episodes
+                swiper.update();
+                
+                // Find the episode to play (either from URL or first episode)
+                const episodeToPlay = allEpisodes.find(ep => ep.episode_number.toString() === episodeNumber.toString()) || allEpisodes[0];
+                
+                if (episodeToPlay) {
+                    currentEpisodeData = episodeToPlay;
+                    loadPlayer(episodeToPlay.episode_number);
+                }
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                movieTitle.textContent = `Error Loading Show`;
+                movieOverview.textContent = "Could not load show details. Please try again later.";
+                
+                // Show error in episodes list
+                episodesList.innerHTML = '<div class="error-message">Failed to load episodes. Please check your connection.</div>';
+            }
+        };
+
+        // Check if current episode is in My List
+        function checkMyListStatus() {
+            if (!currentEpisodeData) return;
+            
+            const myList = JSON.parse(localStorage.getItem('myList')) || [];
+            const isInList = myList.some(item => 
+                item.tmdbId === tmdbId && 
+                item.seasonNumber === seasonNumber && 
+                item.episodeNumber === currentEpisodeData.episode_number.toString()
+            );
+            
+            if (isInList) {
+                listBtn.innerHTML = '<i class="fas fa-check"></i> In My List';
+                listBtn.classList.add('secondary');
+            } else {
+                listBtn.innerHTML = '<i class="fas fa-plus"></i> My List';
+                listBtn.classList.remove('secondary');
+            }
+        }
+
+        // Add to/remove from My List functionality
+        listBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!currentEpisodeData) return;
+            
+            const movieDetails = {
+                tmdbId: tmdbId,
+                seasonNumber: seasonNumber,
+                episodeNumber: currentEpisodeData.episode_number.toString(),
+                title: `${showData?.name || 'Show'} - S${seasonNumber}E${currentEpisodeData.episode_number}`,
+                poster: currentEpisodeData.still_path 
+                    ? `https://image.tmdb.org/t/p/w300${currentEpisodeData.still_path}`
+                   
