@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+    <title>My List</title>
+    <script src="https://kit.fontawesome.com/a02bd9801f.js" crossorigin="anonymous"></script>
+      <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y52WWSC276"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-Y52WWSC276');
+    </script>
+    <style>
+        :root {
+            --card-height: 140px;
+            --card-poster-width: 90px;
+            --gap-size: 15px;
+            --hover-elevate: 5px;
+            --hover-brightness: 1.1;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            color: whitesmoke;
+            background-color: black;
+            position: relative;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .blurred-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            filter: blur(8px);
+            z-index: -1;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+        }
+
+        #background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            opacity: 0.7;
+        }
+
+        header {
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: bold;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .container {
+            padding: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin: 1.5rem 0;
+            text-align: center;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+        }
+
+        .my-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: var(--gap-size);
+            padding: 1rem;
+        }
+
+        .list-item {
+            display: flex;
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            height: var(--card-height);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .list-item:hover {
+            transform: translateY(calc(-1 * var(--hover-elevate)));
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            background: rgba(40, 40, 40, 0.9);
+            filter: brightness(var(--hover-brightness));
+        }
+
+        .poster-container {
+            width: var(--card-poster-width);
+            min-width: var(--card-poster-width);
+            height: 100%;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .poster-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .list-item:hover .poster-container img {
+            transform: scale(1.05);
+        }
+
+        .item-content {
+            flex: 1;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .item-title {
+            margin: 0;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+
+        .item-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1rem;
+            font-size: clamp(0.7rem, 2.5vw, 0.85rem);
+            color: #aaa;
+            align-items: center;
+        }
+
+        .item-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .item-rating i {
+            color: gold;
+            font-size: 0.8em;
+        }
+
+        .item-type {
+            background: rgba(0, 119, 255, 0.2);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.7em;
+            white-space: nowrap;
+        }
+
+        .item-type.movie {
+            background: rgba(0, 255, 0, 0.2);
+        }
+
+        .item-type.tv-series {
+            background: rgba(255, 165, 0, 0.2);
+        }
+
+        .item-type.tv-episode {
+            background: rgba(0, 191, 255, 0.2);
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(255, 0, 0, 0.3);
+            border: none;
+            color: white;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .list-item:hover .delete-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 0, 0, 0.7);
+            transform: scale(1.1) !important;
+        }
+
+        .empty-list {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.1rem;
+            background: rgba(30, 30, 30, 0.5);
+            border-radius: 10px;
+            margin: 1rem;
+            grid-column: 1 / -1;
+        }
+
+        .empty-list i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        /* Episode specific styling */
+        .episode-info {
+            font-size: 0.8em;
+            color: #ccc;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.3rem;
+        }
+
+        .season-episode {
+            background: rgba(255, 165, 0, 0.2);
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+        }
+
+        .episode-title {
+            font-style: italic;
+            color: #ddd;
+        }
+
+        .episode-date {
+            font-size: 0.75em;
+            color: #999;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 900px) {
+            .my-list {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --card-height: 130px;
+                --card-poster-width: 80px;
+                --gap-size: 12px;
+            }
+            
+            .my-list {
+                grid-template-columns: 1fr;
+                padding: 0.5rem;
+            }
+            
+            .delete-btn {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --card-height: 120px;
+                --card-poster-width: 70px;
+                --hover-elevate: 2px;
+            }
+            
+            .item-content {
+                padding: 0.6rem;
+            }
+            
+            .item-meta {
+                gap: 0.3rem 0.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background Video -->
+    <video id="background-video" autoplay loop muted playsinline>
+        <source src="theboys.webm" type="video/webm">
+    </video>
+    
+    <!-- Blurred Background Overlay -->
+    <div class="blurred-background" style="background-image: url('https://image.tmdb.org/t/p/original/8Y43POKjjKDGI9MH89NW0NAzzp8.jpg')"></div>
+    
+    <header>
+        <div class="logo">My Watchlist</div>
+        <button class="back-btn" onclick="window.history.back()">
+            <i class="fas fa-arrow-left"></i> <span class="back-text">Back</span>
+        </button>
+    </header>
+    
+    <div class="container">
+        <h1>My Saved List</h1>
+        
+        <div class="my-list" id="my-list-container">
+            <!-- Items will be loaded here dynamically -->
+        </div>
+        
+        <div class="empty-list" id="empty-message" style="display: none;">
+            <i class="fas fa-bookmark"></i>
+            <h3>Your list is empty</h3>
+            <p>Start adding movies and TV shows to your list!</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const myListContainer = document.getElementById('my-list-container');
+            const emptyMessage = document.getElementById('empty-message');
+            
+            // Load saved items from localStorage
+            function loadMyList() {
+                const myList = JSON.parse(localStorage.getItem('myList')) || [];
+                
+                if (myList.length === 0) {
+                    emptyMessage.style.display = 'block';
+                    myListContainer.style.display = 'grid';
+                    myListContainer.innerHTML = '';
+                    return;
+                }
+                
+                emptyMessage.style.display = 'none';
+                myListContainer.style.display = 'grid';
+                myListContainer.innerHTML = '';
+                
+                myList.forEach((item, index) => {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'list-item';
+                    listItem.setAttribute('data-id', item.tmdbId);
+                    
+                    // Determine media type with fallbacks
+                    let mediaType = item.type || item.media_type;
+                    const hasEpisodeInfo = item.seasonNumber !== undefined && item.episodeNumber !== undefined;
+                    
+                    if (!mediaType) {
+                        mediaType = hasEpisodeInfo ? 'tv-episode' : 'movie';
+                    }
+                    
+                    // Normalize type values
+                    if (mediaType === 'tv' && hasEpisodeInfo) {
+                        mediaType = 'tv-episode';
+                    } else if (mediaType === 'tv') {
+                        mediaType = 'tv-series';
+                    }
+                    
+                    // Set type-specific properties
+                    const isMovie = mediaType === 'movie';
+                    const isTvEpisode = mediaType === 'tv-episode';
+                    const isTvSeries = mediaType === 'tv-series';
+                    
+                    // Get type display information
+                    const typeInfo = {
+                        'movie': { label: 'Movie', class: 'movie' },
+                        'tv-series': { label: 'TV Series', class: 'tv-series' },
+                        'tv-episode': { label: 'TV Episode', class: 'tv-episode' }
+                    }[mediaType] || { label: 'Media', class: '' };
+                    
+                    // Format episode details if available
+                    const episodeDetails = isTvEpisode ? `
+                        <div class="episode-info">
+                            ${hasEpisodeInfo ? `<span class="season-episode">S${item.seasonNumber} E${item.episodeNumber}</span>` : ''}
+                            ${item.episodeTitle ? `<span class="episode-title">${item.episodeTitle}</span>` : ''}
+                            ${item.airDate ? `<span class="episode-date">${formatDate(item.airDate)}</span>` : ''}
+                        </div>
+                    ` : '';
+                    
+                    listItem.innerHTML = `
+                        <div class="poster-container">
+                            <img src="${item.poster || 'img/placeholder.jpg'}" 
+                                 alt="${item.title}" 
+                                 onerror="this.src='img/placeholder.jpg'">
+                        </div>
+                        <div class="item-content">
+                            <div>
+                                <h3 class="item-title">${item.title}</h3>
+                                ${episodeDetails}
+                                <div class="item-meta">
+                                    <span>${item.year || 'N/A'}</span>
+                                    <div class="item-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>${item.rating || '0.0'}</span>
+                                    </div>
+                                    <span class="item-type ${typeInfo.class}">${typeInfo.label}</span>
+                                </div>
+                            </div>
+                            <button class="delete-btn" data-index="${index}" aria-label="Remove from list">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Add click event to navigate to appropriate page
+                    listItem.addEventListener('click', (e) => {
+                        if (e.target.closest('.delete-btn')) return;
+                        
+                        if (isMovie) {
+                            window.location.href = `movie-player.html?tmdbId=${item.tmdbId}`;
+                        } else if (isTvEpisode) {
+                          
+                            window.location.href = `movie-detail.html?tmdbId=${item.tmdbId}`;
+                        }
+                    });
+                    
+                    myListContainer.appendChild(listItem);
+                });
+                
+                // Add event listeners to delete buttons
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const index = this.getAttribute('data-index');
+                        removeFromList(index);
+                    });
+                });
+            }
+            
+            // Format date as "MMM DD, YYYY"
+            function formatDate(dateString) {
+                try {
+                    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                    return new Date(dateString).toLocaleDateString('en-US', options);
+                } catch {
+                    return dateString; // Return original if can't format
+                }
+            }
+            
+            // Remove item from list
+            function removeFromList(index) {
+                const myList = JSON.parse(localStorage.getItem('myList')) || [];
+                if (index >= 0 && index < myList.length) {
+                    const removedItem = myList.splice(index, 1)[0];
+                    localStorage.setItem('myList', JSON.stringify(myList));
+                    loadMyList();
+                    showToast(`Removed: ${removedItem.title || 'Item'}`);
+                }
+            }
+            
+            // Show toast notification
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.textContent = message;
+                toast.style.position = 'fixed';
+                toast.style.bottom = '20px';
+                toast.style.left = '50%';
+                toast.style.transform = 'translateX(-50%)';
+                toast.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
+                toast.style.color = 'white';
+                toast.style.padding = '10px 20px';
+                toast.style.borderRadius = '5px';
+                toast.style.zIndex = '1000';
+                toast.style.transition = 'opacity 0.5s';
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 500);
+                }, 2000);
+            }
+            
+            // Initial load
+            loadMyList();
+            
+            // Make background video loop smoothly
+            const video = document.getElementById('background-video');
+            if (video) {
+                video.addEventListener('ended', function() {
+                    this.currentTime = 0;
+                    this.play();
+                }, false);
+            }
+            
+            // Handle back button text on small screens
+            function handleBackButtonText() {
+                const backText = document.querySelector('.back-text');
+                if (backText) {
+                    backText.style.display = window.innerWidth < 400 ? 'none' : 'inline';
+                }
+            }
+            
+            window.addEventListener('resize', handleBackButtonText);
+            handleBackButtonText();
+        });
+    </script>
+</body>
+  </html>
