@@ -812,7 +812,7 @@ header .content .btns a {
 
 header section {
 
-    position:fixed;
+    position: absolute ;
 
     width: 100%;
 
