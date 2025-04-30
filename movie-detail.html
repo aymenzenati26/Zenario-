@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-     <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TV Series Player</title>
     <!-- Google tag (gtag.js) -->
@@ -255,6 +255,35 @@
             color: #fff;
         }
 
+        .season-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .season-btn {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .season-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .season-btn.active {
+            background: #0079ff;
+            font-weight: 600;
+        }
+
         .swiper {
             width: 100%;
             height: 220px;
@@ -275,6 +304,10 @@
         .swiper-slide:hover {
             transform: scale(1.05);
             z-index: 10;
+        }
+
+        .swiper-slide.active {
+            border: 2px solid #00bdff;
         }
 
         .episode-poster {
@@ -361,6 +394,22 @@
             padding: 20px;
             text-align: center;
         }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #00bdff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
@@ -372,10 +421,9 @@
             <div class="logo_ul">
                 <img src="logo.png" alt="Logo">
                 <ul>
-                    <li><a href="#">Home</a></li>
+                    <li><a href="index.html">Home</a></li>
                     <li><a href="#">TV Shows</a></li>
                     <li><a href="#">Movies</a></li>
-                  
                 </ul>
             </div>
         </nav>
@@ -398,12 +446,15 @@
 
         <div class="player-section">
             <div class="player-container" id="player-container">
-                <!-- Player will be loaded here directly -->
+                <div id="loading-spinner" class="loading-spinner" style="display: none;"></div>
                 <iframe id="movie-iframe" frameborder="0" allowfullscreen allow="autoplay"></iframe>
             </div>
         </div>
 
         <div class="episodes-section">
+            <div class="season-selector" id="season-selector">
+                <!-- Seasons will be loaded here -->
+            </div>
             <h2>Episodes</h2>
             <div class="swiper">
                 <div class="swiper-wrapper" id="episodes-list">
@@ -417,10 +468,10 @@
     <script>
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const tmdbId = urlParams.get('seriesId');
-        const seasonNumber = urlParams.get('seasonNumber') || '1';
-        const episodeNumber = urlParams.get('episodeNumber') || '1';
-        const apiKey = "ef1a1941f096c9755627399fa267b35e"; // Replace with your TMDb API key
+        const tmdbId = urlParams.get('id') || urlParams.get('seriesId');
+        const seasonNumber = urlParams.get('season') || '1';
+        const episodeNumber = urlParams.get('episode') || '1';
+        const apiKey = "3c6ce1f55284598ba7f132908ec1b95e"; // Your TMDb API key
 
         // Initialize Swiper with touch support
         const swiper = new Swiper('.swiper', {
@@ -450,16 +501,34 @@
         const playerContainer = document.getElementById('player-container');
         const movieIframe = document.getElementById('movie-iframe');
         const episodesList = document.getElementById('episodes-list');
+        const seasonSelector = document.getElementById('season-selector');
         const bgImage = document.getElementById('bg-image');
+        const loadingSpinner = document.getElementById('loading-spinner');
 
         // Current episode data
         let currentEpisodeData = null;
         let allEpisodes = [];
         let showData = null;
+        let currentSeason = seasonNumber;
+
+        // Show loading spinner
+        function showLoading() {
+            loadingSpinner.style.display = 'block';
+            movieIframe.style.display = 'none';
+        }
+
+        // Hide loading spinner
+        function hideLoading() {
+            loadingSpinner.style.display = 'none';
+            movieIframe.style.display = 'block';
+        }
 
         // Load the video player
         function loadPlayer(episodeNum) {
-            const playerUrl = `https://vidsrc.vip/embed/tv/${tmdbId}/${seasonNumber}/${episodeNum}`;
+            showLoading();
+            
+            // Use a reliable video source provider
+            const playerUrl = `https://vidsrc.to/embed/tv/${tmdbId}/${currentSeason}/${episodeNum}`;
             movieIframe.setAttribute('src', playerUrl);
             
             // Highlight the selected episode
@@ -470,30 +539,60 @@
             if (episode && episode.still_path) {
                 bgImage.src = `https://image.tmdb.org/t/p/original${episode.still_path}`;
             }
+            
+            // Update URL without reloading
+            const newUrl = `${window.location.pathname}?id=${tmdbId}&season=${currentSeason}&episode=${episodeNum}`;
+            window.history.pushState({}, '', newUrl);
+            
+            // Update current episode data
+            currentEpisodeData = episode;
+            checkMyListStatus();
+            
+            // Hide loading when iframe loads
+            movieIframe.onload = hideLoading;
         }
 
         // Highlight selected episode
         function highlightSelectedEpisode(episodeNum) {
             document.querySelectorAll('.swiper-slide').forEach(card => {
-                card.style.border = card.dataset.episode === episodeNum.toString() ? '2px solid #00bdff' : 'none';
+                if (card.dataset.episode === episodeNum.toString()) {
+                    card.classList.add('active');
+                    // Scroll to this episode in the carousel
+                    const slideIndex = Array.from(card.parentNode.children).indexOf(card);
+                    swiper.slideTo(slideIndex);
+                } else {
+                    card.classList.remove('active');
+                }
             });
         }
 
-        // Fetch TV show details
-        const fetchShowDetails = async () => {
+        // Create season selector buttons
+        function createSeasonSelector(totalSeasons) {
+            seasonSelector.innerHTML = '';
+            for (let i = 1; i <= totalSeasons; i++) {
+                const seasonBtn = document.createElement('button');
+                seasonBtn.className = `season-btn ${i.toString() === currentSeason ? 'active' : ''}`;
+                seasonBtn.textContent = `Season ${i}`;
+                seasonBtn.dataset.season = i;
+                seasonBtn.addEventListener('click', () => {
+                    currentSeason = i.toString();
+                    loadSeasonEpisodes(i);
+                });
+                seasonSelector.appendChild(seasonBtn);
+            }
+        }
+
+        // Load episodes for a specific season
+        async function loadSeasonEpisodes(seasonNum) {
             try {
-                // First fetch show details
-                const showUrl = `https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${apiKey}&language=en-US`;
-                const showResponse = await fetch(showUrl);
+                showLoading();
                 
-                if (!showResponse.ok) {
-                    throw new Error(`Failed to fetch show data: ${showResponse.status}`);
-                }
+                // Update active season button
+                document.querySelectorAll('.season-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.season === seasonNum.toString());
+                });
                 
-                showData = await showResponse.json();
-                
-                // Then fetch season details
-                const seasonUrl = `https://api.themoviedb.org/3/tv/${tmdbId}/season/${seasonNumber}?api_key=${apiKey}&language=en-US`;
+                const seasonUrl = `https://api.themoviedb.org/3/tv/${tmdbId}/season/${seasonNum}?api_key=${apiKey}&language=en-US`;
                 const seasonResponse = await fetch(seasonUrl);
                 
                 if (!seasonResponse.ok) {
@@ -501,31 +600,11 @@
                 }
                 
                 const seasonData = await seasonResponse.json();
-
-                // Update show title and overview
-                movieTitle.textContent = `${showData.name} - Season ${seasonNumber}`;
-                movieOverview.textContent = seasonData.overview || showData.overview || "No overview available.";
-                
-                // Update details
-                releaseYear.textContent = seasonData.air_date 
-                    ? new Date(seasonData.air_date).getFullYear() 
-                    : showData.first_air_date 
-                        ? new Date(showData.first_air_date).getFullYear() 
-                        : 'N/A';
-                
-                seasonCount.textContent = `${showData.number_of_seasons} Season${showData.number_of_seasons !== 1 ? 's' : ''}`;
-                rating.textContent = showData.vote_average ? showData.vote_average.toFixed(1) : 'N/A';
-                matchPercent.textContent = `${Math.floor(Math.random() * 30) + 70}% Match`;
-
-                // Set background image (using show backdrop)
-                if (showData.backdrop_path) {
-                    bgImage.src = `https://image.tmdb.org/t/p/original${showData.backdrop_path}`;
-                }
-
-                // Load episodes
                 allEpisodes = seasonData.episodes || [];
+                
+                // Update episodes list
                 episodesList.innerHTML = '';
-
+                
                 if (allEpisodes.length === 0) {
                     episodesList.innerHTML = '<div class="error-message">No episodes found for this season</div>';
                     return;
@@ -544,14 +623,13 @@
                         <img src="${posterUrl}" alt="${episode.name}" class="episode-poster">
                         <div class="episode-info">
                             <h4>${episode.episode_number}. ${episode.name}</h4>
-                            <p>${episode.air_date || 'Date not available'}</p>
+                            <p>${episode.air_date ? new Date(episode.air_date).toLocaleDateString() : 'Date not available'}</p>
                             <p>${episode.runtime || '--'} min</p>
                         </div>
                     `;
                     
                     // Add click event to play episode
                     episodeItem.addEventListener('click', () => {
-                        currentEpisodeData = episode;
                         loadPlayer(episode.episode_number);
                     });
                     
@@ -561,21 +639,70 @@
                 // Update Swiper after loading episodes
                 swiper.update();
                 
-                // Find the episode to play (either from URL or first episode)
-                const episodeToPlay = allEpisodes.find(ep => ep.episode_number.toString() === episodeNumber.toString()) || allEpisodes[0];
+                                // Find the episode to play (either from URL or first episode)
+                const episodeToPlay = allEpisodes.find(ep => 
+                    seasonNum.toString() === seasonNumber.toString() && 
+                    ep.episode_number.toString() === episodeNumber.toString()
+                ) || allEpisodes[0];
                 
                 if (episodeToPlay) {
-                    currentEpisodeData = episodeToPlay;
                     loadPlayer(episodeToPlay.episode_number);
+                } else {
+                    hideLoading();
                 }
 
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('Error fetching season data:', error);
+                episodesList.innerHTML = '<div class="error-message">Failed to load episodes. Please check your connection.</div>';
+                hideLoading();
+            }
+        }
+
+        // Fetch TV show details
+        const fetchShowDetails = async () => {
+            try {
+                // First fetch show details
+                const showUrl = `https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${apiKey}&language=en-US`;
+                const showResponse = await fetch(showUrl);
+                
+                if (!showResponse.ok) {
+                    throw new Error(`Failed to fetch show data: ${showResponse.status}`);
+                }
+                
+                showData = await showResponse.json();
+                
+                // Update show title and overview
+                movieTitle.textContent = showData.name;
+                movieOverview.textContent = showData.overview || "No overview available.";
+                
+                // Update details
+                releaseYear.textContent = showData.first_air_date 
+                    ? new Date(showData.first_air_date).getFullYear() 
+                    : 'N/A';
+                
+                seasonCount.textContent = `${showData.number_of_seasons} Season${showData.number_of_seasons !== 1 ? 's' : ''}`;
+                rating.textContent = showData.vote_average ? showData.vote_average.toFixed(1) : 'N/A';
+                matchPercent.textContent = `${Math.floor(Math.random() * 30) + 70}% Match`;
+
+                // Set background image (using show backdrop)
+                if (showData.backdrop_path) {
+                    bgImage.src = `https://image.tmdb.org/t/p/original${showData.backdrop_path}`;
+                }
+
+                // Create season selector
+                createSeasonSelector(showData.number_of_seasons);
+                
+                // Load episodes for the current season
+                loadSeasonEpisodes(parseInt(currentSeason));
+
+            } catch (error) {
+                console.error('Error fetching show data:', error);
                 movieTitle.textContent = `Error Loading Show`;
                 movieOverview.textContent = "Could not load show details. Please try again later.";
                 
                 // Show error in episodes list
-                episodesList.innerHTML = '<div class="error-message">Failed to load episodes. Please check your connection.</div>';
+                episodesList.innerHTML = '<div class="error-message">Failed to load show data. Please check your connection.</div>';
+                hideLoading();
             }
         };
 
@@ -586,7 +713,7 @@
             const myList = JSON.parse(localStorage.getItem('myList')) || [];
             const isInList = myList.some(item => 
                 item.tmdbId === tmdbId && 
-                item.seasonNumber === seasonNumber && 
+                item.seasonNumber === currentSeason && 
                 item.episodeNumber === currentEpisodeData.episode_number.toString()
             );
             
@@ -602,41 +729,40 @@
         // Add to/remove from My List functionality
         listBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            if (!currentEpisodeData) return;
+            if (!currentEpisodeData || !showData) return;
             
-            const movieDetails = {
+            const episodeDetails = {
                 tmdbId: tmdbId,
-                seasonNumber: seasonNumber,
+                seasonNumber: currentSeason,
                 episodeNumber: currentEpisodeData.episode_number.toString(),
-                title: `${showData?.name || 'Show'} - S${seasonNumber}E${currentEpisodeData.episode_number}`,
+                title: `${showData.name} - S${currentSeason}E${currentEpisodeData.episode_number}`,
                 poster: currentEpisodeData.still_path 
                     ? `https://image.tmdb.org/t/p/w300${currentEpisodeData.still_path}`
                     : '',
-                link: `https://vidsrc.vip/embed/tv/${tmdbId}/${seasonNumber}/${currentEpisodeData.episode_number}`,
+                link: `https://vidsrc.to/embed/tv/${tmdbId}/${currentSeason}/${currentEpisodeData.episode_number}`,
+                type: 'tv'
             };
 
             const myList = JSON.parse(localStorage.getItem('myList')) || [];
             const isAlreadyAdded = myList.some(item => 
                 item.tmdbId === tmdbId && 
-                item.seasonNumber === seasonNumber && 
+                item.seasonNumber === currentSeason && 
                 item.episodeNumber === currentEpisodeData.episode_number.toString()
             );
 
             if (!isAlreadyAdded) {
-                myList.push(movieDetails);
+                myList.push(episodeDetails);
                 localStorage.setItem('myList', JSON.stringify(myList));
-                alert('Added to My List!');
                 listBtn.innerHTML = '<i class="fas fa-check"></i> In My List';
                 listBtn.classList.add('secondary');
             } else {
                 // Remove from list
                 const updatedList = myList.filter(item => 
                     !(item.tmdbId === tmdbId && 
-                    item.seasonNumber === seasonNumber && 
+                    item.seasonNumber === currentSeason && 
                     item.episodeNumber === currentEpisodeData.episode_number.toString())
                 );
                 localStorage.setItem('myList', JSON.stringify(updatedList));
-                alert('Removed from My List!');
                 listBtn.innerHTML = '<i class="fas fa-plus"></i> My List';
                 listBtn.classList.remove('secondary');
             }
