@@ -374,9 +374,8 @@
         <img src="logo.png" alt="StreamTV Logo" class="logo">
         <div class="nav-links">
             <a href="index.html">Home</a>
-            <a href="#">TV Shows</a>
-            <a href="#">Movies</a>
-            <a href="#">New & Popular</a>
+            <a href="tv.html">TV Shows</a>
+            <a href="movies.html">Movies</a>
             <a href="my-list.html">My List</a>
         </div>
     </div>
@@ -404,6 +403,18 @@
             const baseUrl = 'https://api.themoviedb.org/3';
             const imageBaseUrl = 'https://image.tmdb.org/t/p/original';
             const backdropBaseUrl = 'https://image.tmdb.org/t/p/original';
+            let currentSeason = 1;
+
+            // Function to handle episode clicks
+            function setupEpisodeClickHandlers() {
+                document.querySelectorAll('.swiper-slide').forEach(slide => {
+                    slide.addEventListener('click', function() {
+                        const season = this.dataset.season;
+                        const episode = this.dataset.episode;
+                        window.location.href = `movie-detail.html?seriesId=${seriesId}&season=${season}&episode=${episode}`;
+                    });
+                });
+            }
 
             // Fetch series details
             async function fetchSeriesDetails() {
@@ -416,7 +427,7 @@
                 }
             }
 
-            // Fetch season details (default to season 1)
+            // Fetch season details
             async function fetchSeasonDetails(seasonNum = 1) {
                 try {
                     const response = await fetch(`${baseUrl}/tv/${seriesId}/season/${seasonNum}?api_key=${apiKey}`);
@@ -438,15 +449,41 @@
                 }
             }
 
+            // Render episodes for a season
+            async function renderEpisodes(seasonNum) {
+                const seasonData = await fetchSeasonDetails(seasonNum);
+                if (!seasonData) return false;
+
+                const episodesHTML = seasonData.episodes.map(ep => `
+                    <div class="swiper-slide" 
+                         data-season="${seasonNum}" 
+                         data-episode="${ep.episode_number}">
+                        <div class="episode-card">
+                            <img src="${imageBaseUrl}${ep.still_path || '/null'}" alt="${ep.name}" class="episode-image">
+                            <div class="episode-info">
+                                <div class="episode-number">Episode ${ep.episode_number}</div>
+                                <h3 class="episode-title">${ep.name}</h3>
+                                <p class="episode-description">${ep.overview || 'No description available.'}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.querySelector('.swiper-wrapper').innerHTML = episodesHTML;
+                setupEpisodeClickHandlers();
+                return true;
+            }
+
             // Render the series page
             async function renderSeriesPage() {
                 const app = document.getElementById('app');
                 
-                const series = await fetchSeriesDetails();
-                const season = await fetchSeasonDetails();
-                const videos = await fetchSeriesVideos();
+                const [series, videos] = await Promise.all([
+                    fetchSeriesDetails(),
+                    fetchSeriesVideos()
+                ]);
                 
-                if (!series || !season || !videos) {
+                if (!series || !videos) {
                     app.innerHTML = '<div class="error">Failed to load series data. Please try again later.</div>';
                     return;
                 }
@@ -511,22 +548,7 @@
                         </div>
                         <h2 class="section-title">Episodes</h2>
                         <div class="swiper episodes-swiper">
-                            <div class="swiper-wrapper">
-                                ${season.episodes.map(ep => `
-                                    <div class="swiper-slide" 
-                                         data-season="1" 
-                                         data-episode="${ep.episode_number}">
-                                        <div class="episode-card">
-                                            <img src="${imageBaseUrl}${ep.still_path || '/null'}" alt="${ep.name}" class="episode-image">
-                                            <div class="episode-info">
-                                                <div class="episode-number">Episode ${ep.episode_number}</div>
-                                                <h3 class="episode-title">${ep.name}</h3>
-                                                <p class="episode-description">${ep.overview || 'No description available.'}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
+                            <div class="swiper-wrapper"></div>
                         </div>
                     </div>
                 `;
@@ -538,50 +560,29 @@
                     freeMode: true,
                 });
 
+                // Load initial season episodes
+                await renderEpisodes(currentSeason);
+
                 // Handle season selection
                 document.querySelectorAll('.season-btn').forEach(btn => {
                     btn.addEventListener('click', async function() {
-                        const newSeason = this.dataset.season;
-                        const seasonData = await fetchSeasonDetails(newSeason);
+                        const newSeason = parseInt(this.dataset.season);
+                        if (newSeason === currentSeason) return;
                         
-                        if (seasonData) {
-                            document.querySelector('.swiper-wrapper').innerHTML = seasonData.episodes.map(ep => `
-                                <div class="swiper-slide" 
-                                     data-season="${newSeason}" 
-                                     data-episode="${ep.episode_number}">
-                                    <div class="episode-card">
-                                        <img src="${imageBaseUrl}${ep.still_path || '/null'}" alt="${ep.name}" class="episode-image">
-                                        <div class="episode-info">
-                                            <div class="episode-number">Episode ${ep.episode_number}</div>
-                                            <h3 class="episode-title">${ep.name}</h3>
-                                            <p class="episode-description">${ep.overview || 'No description available.'}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('');
-                            
-                            // Update active season button
-                            document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
-                            this.classList.add('active');
-                            
-                            // Reinitialize Swiper
+                        document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        const success = await renderEpisodes(newSeason);
+                        if (success) {
+                            currentSeason = newSeason;
                             swiper.update();
                         }
                     });
                 });
 
-                // Handle episode selection
+                // Handle play button click
                 document.querySelector('.btn-play').addEventListener('click', function() {
-                    // Play first episode by default
                     window.location.href = `movie-detail.html?seriesId=${seriesId}&season=1&episode=1`;
-                });
-
-                document.querySelectorAll('.swiper-slide').forEach(slide => {
-                    slide.addEventListener('click', function() {
-                        const season = this.dataset.season;
-                        const episode = this.dataset.episode;
-                        window.location.href = `movie-detail.html?seriesId=${seriesId}&season=${season}&episode=${episode}`;
-                    });
                 });
 
                 // Navbar scroll effect
