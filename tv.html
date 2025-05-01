@@ -91,7 +91,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-                        background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.2);
             padding: 0 50px;
             z-index: 10;
         }
@@ -224,16 +224,18 @@
             justify-content: center;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            gap: 8px;
+            padding: 0 20px;
         }
 
         .category-tab {
             padding: 8px 15px;
-            margin: 0 5px 10px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             font-size: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
         .category-tab.active {
@@ -258,6 +260,17 @@
                 width: 140px;
                 height: 160px;
             }
+            
+            .category-tabs {
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding-bottom: 10px;
+                scrollbar-width: none;
+            }
+            
+            .category-tabs::-webkit-scrollbar {
+                display: none;
+            }
         }
 
         @media screen and (max-width: 480px) {
@@ -268,6 +281,10 @@
             .swiper-slide {
                 width: 120px;
                 height: 140px;
+            }
+            
+            .back-button {
+                left: 85%;
             }
         }
     </style>
@@ -292,10 +309,10 @@
         <div class="logo_ul">
             <img src="logo.png" alt="Logo">
             <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#">TV Shows</a></li>
-                <li><a href="#">Movies</a></li>
-                <li><a href="#">My List</a></li>
+                <li><a href="index.html">Home</a></li>
+            
+                <li><a href="movies.html">Movies</a></li>
+                <li><a href="my-list.html">My List</a></li>
             </ul>
         </div>
     </header>
@@ -309,6 +326,22 @@
         <div class="category-tab" data-category="top_rated">Top Rated</div>
         <div class="category-tab" data-category="on_the_air">On TV</div>
         <div class="category-tab" data-category="airing_today">Airing Today</div>
+        <div class="category-tab" data-genre="10759">Action & Adventure</div>
+        <div class="category-tab" data-genre="16">Animation</div>
+        <div class="category-tab" data-genre="35">Comedy</div>
+        <div class="category-tab" data-genre="80">Crime</div>
+        <div class="category-tab" data-genre="99">Documentary</div>
+        <div class="category-tab" data-genre="18">Drama</div>
+        <div class="category-tab" data-genre="10751">Family</div>
+        <div class="category-tab" data-genre="10762">Kids</div>
+        <div class="category-tab" data-genre="9648">Mystery</div>
+        <div class="category-tab" data-genre="10763">News</div>
+        <div class="category-tab" data-genre="10764">Reality</div>
+        <div class="category-tab" data-genre="10765">Sci-Fi & Fantasy</div>
+        <div class="category-tab" data-genre="10766">Soap</div>
+        <div class="category-tab" data-genre="10767">Talk</div>
+        <div class="category-tab" data-genre="10768">War & Politics</div>
+        <div class="category-tab" data-genre="37">Western</div>
     </div>
 
     <div class="series-section">
@@ -325,6 +358,7 @@
         // API Configuration
         const apiKey = "ef1a1941f096c9755627399fa267b35e";
         let currentCategory = "popular";
+        let currentGenre = null;
         let currentPage = 1;
         let isLoading = false;
 
@@ -356,13 +390,19 @@
             window.location.href = 'index.html';
         });
 
-        // Fetch TV series by category
-        async function fetchSeries(category = "popular", page = 1) {
+        // Fetch TV series by category or genre
+        async function fetchSeries(category = "popular", genre = null, page = 1) {
             try {
                 isLoading = true;
-                const response = await fetch(
-                    `https://api.themoviedb.org/3/tv/${category}?api_key=${apiKey}&language=en-US&page=${page}`
-                );
+                let url;
+                
+                if (genre) {
+                    url = `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=${page}&with_genres=${genre}`;
+                } else {
+                    url = `https://api.themoviedb.org/3/tv/${category}?api_key=${apiKey}&language=en-US&page=${page}`;
+                }
+                
+                const response = await fetch(url);
                 const data = await response.json();
                 
                 if (page === 1) {
@@ -399,7 +439,6 @@
                     </div>
                 `;
                 
-                // Corrected click event to open tv-series.html with the show ID
                 seriesItem.addEventListener('click', () => {
                     window.location.href = `tv-series.html?id=${show.id}`;
                 });
@@ -416,15 +455,21 @@
             tab.addEventListener('click', () => {
                 categoryTabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                currentCategory = tab.dataset.category;
-                currentPage = 1;
                 
-                // Update section title
-                const categoryName = tab.textContent;
-                sectionTitle.textContent = `${categoryName} TV Shows`;
+                const category = tab.dataset.category;
+                const genre = tab.dataset.genre;
                 
-                // Fetch series for the new category
-                fetchSeries(currentCategory);
+                if (category) {
+                    currentCategory = category;
+                    currentGenre = null;
+                    sectionTitle.textContent = `${tab.textContent} TV Shows`;
+                    fetchSeries(currentCategory);
+                } else if (genre) {
+                    currentGenre = genre;
+                    currentCategory = null;
+                    sectionTitle.textContent = `${tab.textContent} TV Shows`;
+                    fetchSeries(null, currentGenre);
+                }
             });
         });
 
@@ -435,7 +480,11 @@
             if (query.length > 2) {
                 searchSeries(query);
             } else if (query.length === 0) {
-                fetchSeries(currentCategory);
+                if (currentGenre) {
+                    fetchSeries(null, currentGenre);
+                } else {
+                    fetchSeries(currentCategory);
+                }
             }
         });
 
@@ -451,8 +500,10 @@
                 
                 if (data.results && data.results.length > 0) {
                     displaySeries(data.results);
+                    sectionTitle.textContent = `Search Results for "${query}"`;
                 } else {
                     seriesList.innerHTML = '<div class="error-message">No TV shows found</div>';
+                    sectionTitle.textContent = `No results for "${query}"`;
                 }
             } catch (error) {
                 console.error('Error searching TV series:', error);
