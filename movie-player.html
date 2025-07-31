@@ -2,16 +2,14 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="logo.png" type="image/x-icon" />
     <title>Movie Player</title>
     <script src="https://kit.fontawesome.com/a02bd9801f.js" crossorigin="anonymous"></script>
-    <!-- Swiper JS -->
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y52WWSC276"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -70,23 +68,16 @@
             padding: 0 20px;
         }
 
-        #playbtn {
+        #player-select {
             padding: 10px 20px;
             margin: 10px;
-            background: linear-gradient(90deg, #00bdff, #0079ff);
-            color: white;
-            border: none;
             border-radius: 5px;
-            cursor: pointer;
             font-weight: 600;
             font-size: 15px;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        #playbtn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 121, 255, 0.4);
-        }
+            background: rgba(30, 144, 255, 0.3); /* Dodger Blue with 30% opacity */
+backdrop-filter: blur(5px);
+            color: white;
+                  }
 
         #listbtn {
             padding: 10px 20px;
@@ -132,7 +123,6 @@
             font-weight: bold;
         }
 
-        /* Recommendations Section */
         .recommendations-section {
             width: 100%;
             padding: 20px 0 50px;
@@ -228,10 +218,10 @@
     <div class="blurred-background" id="blurred-bg"></div>
     <div class="container">
         <iframe id="movie-iframe" frameborder="0" allowfullscreen allow="autoplay"></iframe>
-        
+
         <div class="content-container">
             <h1 id="movie-title">Loading...</h1>
-            
+
             <div class="details">
                 <div class="detail-item" id="release-year">2023</div>
                 <div class="detail-item rating">
@@ -240,16 +230,20 @@
                 </div>
                 <div class="detail-item" id="runtime">120 min</div>
             </div>
-            
+
             <p id="movie-overview">Loading movie details...</p>
-            
+
             <div>
-                <button id="playbtn"><i class="fas fa-play"></i> Play</button>
+                <select id="player-select">
+                    <option disabled selected>Choose Player</option>
+                    <option value="vip">Player 1 (vidsrc.vip)</option>
+                    <option value="cc">Player 2 (vidsrc.cc)</option>
+                </select>
+
                 <button id="listbtn"><i class="fas fa-plus"></i> My List</button>
             </div>
         </div>
 
-        <!-- Recommendations Section -->
         <div class="recommendations-section">
             <h2>More Like This</h2>
             <div class="swiper">
@@ -262,12 +256,10 @@
     </div>
 
     <script>
-        // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const tmdbId = urlParams.get('tmdbId');
         const apiKey = "ef1a1941f096c9755627399fa267b35e";
 
-        // Initialize Swiper
         const swiper = new Swiper('.swiper', {
             slidesPerView: 'auto',
             spaceBetween: 10,
@@ -283,43 +275,36 @@
             grabCursor: true,
         });
 
-        // DOM Elements
         const movieTitle = document.getElementById('movie-title');
         const movieOverview = document.getElementById('movie-overview');
         const releaseYear = document.getElementById('release-year');
         const rating = document.getElementById('rating');
         const runtime = document.getElementById('runtime');
-        const playBtn = document.getElementById('playbtn');
         const listBtn = document.getElementById('listbtn');
         const movieIframe = document.getElementById('movie-iframe');
         const blurredBg = document.getElementById('blurred-bg');
         const recommendationsList = document.getElementById('recommendations-list');
 
-        // Load the movie player
         function loadMovie() {
-            const playerUrl = `https://vidsrc.vip/embed/movie/${tmdbId}`;
-            movieIframe.src = playerUrl;
+            movieIframe.src = `https://vidsrc.cc/v2/embed/movie/${tmdbId}`;
         }
 
-        // Fetch movie recommendations
         async function fetchRecommendations() {
             try {
-                const response = await fetch(
-                    `https://api.themoviedb.org/3/movie/${tmdbId}/recommendations?api_key=${apiKey}&language=en-US&page=1`
-                );
+                const response = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}/recommendations?api_key=${apiKey}&language=en-US&page=1`);
                 const data = await response.json();
-                
+
                 if (data.results && data.results.length > 0) {
                     recommendationsList.innerHTML = '';
-                    
+
                     data.results.forEach(movie => {
                         if (!movie.poster_path) return;
-                        
+
                         const movieItem = document.createElement('div');
                         movieItem.className = 'swiper-slide';
-                        
+
                         const posterUrl = `https://image.tmdb.org/t/p/w300${movie.poster_path}`;
-                        
+
                         movieItem.innerHTML = `
                             <img src="${posterUrl}" alt="${movie.title}" class="movie-poster">
                             <div class="movie-info">
@@ -328,16 +313,14 @@
                                 <p><i class="fas fa-star"></i> ${movie.vote_average?.toFixed(1) || '0.0'}</p>
                             </div>
                         `;
-                        
-                        // Add click event to play recommended movie
+
                         movieItem.addEventListener('click', () => {
                             window.location.href = `?tmdbId=${movie.id}`;
                         });
-                        
+
                         recommendationsList.appendChild(movieItem);
                     });
-                    
-                    // Update Swiper after loading recommendations
+
                     swiper.update();
                 }
             } catch (error) {
@@ -345,47 +328,38 @@
             }
         }
 
-        // Fetch movie details
         async function fetchMovieDetails() {
             try {
-                const response = await fetch(
-                    `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}&language=en-US`
-                );
+                const response = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}&language=en-US`);
                 const movieData = await response.json();
 
-                // Update UI
                 movieTitle.textContent = movieData.title;
                 movieOverview.textContent = movieData.overview || "No overview available.";
                 releaseYear.textContent = new Date(movieData.release_date).getFullYear();
                 rating.textContent = movieData.vote_average?.toFixed(1) || '0.0';
                 runtime.textContent = `${Math.floor(movieData.runtime / 60)}h ${movieData.runtime % 60}m` || 'N/A';
-                
-                // Set background
+
                 if (movieData.backdrop_path) {
                     blurredBg.style.backgroundImage = `url(https://image.tmdb.org/t/p/original${movieData.backdrop_path})`;
                 }
 
-                // Load the movie
                 loadMovie();
-
-                // Check if movie is already in My List
                 checkMyListStatus();
 
-                // Add to My List functionality
                 listBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     toggleMyList(movieData);
                 });
 
-                // Play button event
-                playBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    loadMovie();
+                document.getElementById('player-select').addEventListener('change', (e) => {
+                    const selectedPlayer = e.target.value;
+                    const playerUrl = selectedPlayer === 'vip'
+                        ? `https://vidsrc.vip/embed/movie/${tmdbId}`
+                        : `https://vidsrc.cc/v2/embed/movie/${tmdbId}`;
+                    movieIframe.src = playerUrl;
                 });
 
-                // Fetch recommendations
                 fetchRecommendations();
-
             } catch (error) {
                 console.error('Error fetching movie data:', error);
                 movieTitle.textContent = 'Error Loading Movie';
@@ -393,26 +367,22 @@
             }
         }
 
-        // Check if current movie is in My List
         function checkMyListStatus() {
             const myList = JSON.parse(localStorage.getItem('myList')) || [];
             const isInList = myList.some(item => item.tmdbId === tmdbId);
-            
+
             if (isInList) {
                 listBtn.innerHTML = '<i class="fas fa-check"></i> In My List';
                 listBtn.style.background = 'rgba(0, 255, 0, 0.2)';
             }
         }
 
-        // Add/remove from My List
         function toggleMyList(movieData) {
             const movieDetails = {
                 tmdbId: tmdbId,
                 title: movieData.title,
-                poster: movieData.poster_path 
-                    ? `https://image.tmdb.org/t/p/w300${movieData.poster_path}`
-                    : '',
-                link: `https://vidsrc.vip/embed/movie/${tmdbId}`,
+                poster: movieData.poster_path ? `https://image.tmdb.org/t/p/w300${movieData.poster_path}` : '',
+                link: `https://vidsrc.cc/v2/embed/movie/${tmdbId}`,
                 year: new Date(movieData.release_date).getFullYear(),
                 rating: movieData.vote_average?.toFixed(1) || '0.0'
             };
@@ -427,7 +397,6 @@
                 listBtn.innerHTML = '<i class="fas fa-check"></i> In My List';
                 listBtn.style.background = 'rgba(0, 255, 0, 0.2)';
             } else {
-                // Remove from list
                 const updatedList = myList.filter(item => item.tmdbId !== tmdbId);
                 localStorage.setItem('myList', JSON.stringify(updatedList));
                 alert('Removed from My List!');
@@ -436,7 +405,6 @@
             }
         }
 
-        // Initialize
         if (tmdbId) {
             fetchMovieDetails();
         } else {
@@ -444,4 +412,5 @@
         }
     </script>
 </body>
+
 </html>
