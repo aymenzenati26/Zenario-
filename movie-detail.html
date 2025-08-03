@@ -439,7 +439,8 @@
             <p id="movie-overview">Loading show details...</p>
             
             <div class="btns">
-                <a href="#" id="playbtn"><i class="fas fa-play"></i> Play</a>
+          <a href="#" id="playbtn"><i class="fas fa-play"></i> Play</a>
+           
                 <a href="#" class="secondary" id="listbtn"><i class="fas fa-plus"></i> My List</a>
             </div>
         </div>
@@ -528,7 +529,7 @@
             showLoading();
             
             // Use a reliable video source provider
-            const playerUrl = `https://vidsrc.to/embed/tv/${tmdbId}/${currentSeason}/${episodeNum}`;
+            const playerUrl = `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${currentSeason}/${episodeNum}`;
             movieIframe.setAttribute('src', playerUrl);
             
             // Highlight the selected episode
@@ -639,7 +640,7 @@
                 // Update Swiper after loading episodes
                 swiper.update();
                 
-                                // Find the episode to play (either from URL or first episode)
+                // Find the episode to play (either from URL or first episode)
                 const episodeToPlay = allEpisodes.find(ep => 
                     seasonNum.toString() === seasonNumber.toString() && 
                     ep.episode_number.toString() === episodeNumber.toString()
