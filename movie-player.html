@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -236,8 +236,8 @@ backdrop-filter: blur(5px);
             <div>
                 <select id="player-select">
                     <option disabled selected>Choose Player</option>
-                    <option value="vip">Player 1 (vidsrc.vip)</option>
-                    <option value="cc">Player 2 (vidsrc.cc)</option>
+                    <option value="vip">Player 1</option>
+                    <option value="cc">Player 2 </option>
                 </select>
 
                 <button id="listbtn"><i class="fas fa-plus"></i> My List</button>
@@ -286,7 +286,7 @@ backdrop-filter: blur(5px);
         const recommendationsList = document.getElementById('recommendations-list');
 
         function loadMovie() {
-            movieIframe.src = `https://vidsrc.cc/v2/embed/movie/${tmdbId}`;
+            movieIframe.src = `https://v2.vidsrc.me/embed/${tmdbId}`;
         }
 
         async function fetchRecommendations() {
@@ -354,7 +354,7 @@ backdrop-filter: blur(5px);
                 document.getElementById('player-select').addEventListener('change', (e) => {
                     const selectedPlayer = e.target.value;
                     const playerUrl = selectedPlayer === 'vip'
-                        ? `https://vidsrc.vip/embed/movie/${tmdbId}`
+                        ? `https://v2.vidsrc.me/embed/${tmdbId}`
                         : `https://vidsrc.cc/v2/embed/movie/${tmdbId}`;
                     movieIframe.src = playerUrl;
                 });
@@ -382,7 +382,7 @@ backdrop-filter: blur(5px);
                 tmdbId: tmdbId,
                 title: movieData.title,
                 poster: movieData.poster_path ? `https://image.tmdb.org/t/p/w300${movieData.poster_path}` : '',
-                link: `https://vidsrc.cc/v2/embed/movie/${tmdbId}`,
+                link: `https://v2.vidsrc.me/embed/${tmdbId}`,
                 year: new Date(movieData.release_date).getFullYear(),
                 rating: movieData.vote_average?.toFixed(1) || '0.0'
             };
@@ -413,4 +413,5 @@ backdrop-filter: blur(5px);
     </script>
 </body>
 
-</html>
+                    </html>
+                
