@@ -531,7 +531,7 @@
             showLoading();
             
             // Use a reliable video source provider
-            const playerUrl = `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${currentSeason}/${episodeNum}`;
+            const playerUrl = `https://vidrock.ru/tv/${tmdbId}/${currentSeason}/${episodeNum}`;
             movieIframe.setAttribute('src', playerUrl);
             
             // Highlight the selected episode
@@ -742,7 +742,7 @@
                 poster: currentEpisodeData.still_path 
                     ? `https://image.tmdb.org/t/p/w300${currentEpisodeData.still_path}`
                     : '',
-                link: `https://vidsrc.to/embed/tv/${tmdbId}/${currentSeason}/${currentEpisodeData.episode_number}`,
+                link: `https://vidrock.ru/tv/${tmdbId}/${currentSeason}/${currentEpisodeData.episode_number}`,
                 type: 'tv'
             };
 
